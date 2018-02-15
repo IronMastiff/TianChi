@@ -1,23 +1,20 @@
 import numpy as np
 
-def get_batches( arr, batch_size, n_steps ):
-    chars_per_batch = batch_size * n_steps
-    n_batches = len( arr ) // chars_per_batch    #取整运算
-    arr = arr[:n_batches * chars_per_batch]
-    arr = arr.reshape( ( batch_size, -1 ) )
-    for n in range( 0, arr.shape[1], n_steps ):
-        x = arr[:, n : n + n_steps]
-        y_temp = arr[:, n + 1 : n + n_steps + 1]
+def select_data_y( data ):
+    data_len = len( data )
+    data_y = data[1 : data_len]
+    arr = np.zeros( data.shape, dtype = data.type )
+    arr[: data_y.shape[1]] = data_y
 
-        y = np.zeros( x.shape, dtype = x.dtype )
-        y[:, : y_temp.shape[1]] = y_temp
+    return arr
 
-        yield x, y
+def classification_data( data_x, data_y ):
+    split_idx= len( data_x ) * 0.9
+    train_x, val_x = data_x[: split_idx], data_x[split_idx :]
+    train_y, val_y = data_y[: split_idx], data_y[split_idx :]
 
-def build_inputs( batch_size, num_steps ):
-    inputs = tf.placeholder( tf.int32, [batch_size, num_steps], name = 'inputs' )
-    targets = tf.placeholder( tf.int32, [batch_size, num_steps], name = 'targets' )
+    # split 0
+    val_x = val_x[: len( val_x ) - 1]
+    val_y = val_y[: len( val_y ) - 1]
 
-    keep_prob = tf.placeholder( tf.float32, name = 'keep_prob' )
-
-    return inputs, targets, keep_prob
+    return train_x, train_y, val_x, val_y
